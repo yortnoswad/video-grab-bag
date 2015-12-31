@@ -1,0 +1,11 @@
+# Requirements for each script
+
+grab-pictures.sh
+================
+wget
+
+
+make-movie-hourly.sh
+====================
+mogrify (ImageMagick)
+ffmpeg
