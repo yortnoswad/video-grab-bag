@@ -12,16 +12,16 @@ THISHOUR=`echo $DATE | cut -d'-' -f2`
 
 if [ "$DEBUG" == "true" ] ; then
   echo "date: $DATE  thisday: $THISDAY thishour: $THISHOUR"
-  ls -d $BASEDIR/$THISDAY
+  ls -d $DATADIR/$THISDAY
 fi
 
 ############
 # MAIN PROGRAM
 ############
-if [ -d $BASEDIR/$THISDAY ] ; then
-  if ! [ -d $BASEDIR/$THISDAY/video ] ; then
-    mkdir -p $BASEDIR/$THISDAY/video
-    cd $BASEDIR/$THISDAY/video
+if [ -d $DATADIR/$THISDAY ] ; then
+  if ! [ -d $DATADIR/$THISDAY/video ] ; then
+    mkdir -p $DATADIR/$THISDAY/video
+    cd $DATADIR/$THISDAY/video
 
     for camera in ${!cameras[@]}
     do
@@ -50,8 +50,8 @@ fi
 # YESTERDAYMONTH=`date --date="yesterday" +%m`
 # sync
 # sync
-# if [ -d $BASEDIR/$YESTERDAY ] ; then
-# 	cd $BASEDIR/$YESTERDAY
+# if [ -d $DATADIR/$YESTERDAY ] ; then
+# 	cd $DATADIR/$YESTERDAY
 lftp -e "cd daily/$YESTERDAYYEAR/$YESTERDAYMONTH; put video.$YESTERDAY.1.mp4; put video.$YESTERDAY.2.mp4; bye" -u $UPLOADUSER,$UPLOADPASSWORD $UPLOADSERVER
 # fi
 # 
