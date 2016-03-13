@@ -36,9 +36,9 @@ if [ -d $DATADIR/$THISDAY/$THISHOUR ] ; then
       ls -1 $camera-* | while read line
       do
         if [ "$camera_orientation" == "normal" ] ; then
-          convert $line -resize 1024x ../low/$line
+          convert $line -gravity south -pointsize 48 -annotate 0 "$line" -resize 1024x ../low/$line
         else
-          convert $line -flip -flop -resize 1024x ../low/$line        
+          convert $line -gravity south -pointsize 48 -annotate 0 "$line" -flip -flop -resize 1024x ../low/$line        
         fi
       done
       
