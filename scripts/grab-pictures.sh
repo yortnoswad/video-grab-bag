@@ -48,8 +48,8 @@ elif [ $HOUR -ge $STARTHOUR ] ; then
   do
     camera_url=`echo ${cameras["$camera"]}| awk '{print $1}'`
     DATE=`date +%Y%m%d-%H-%M%S`
-    THISDAY=`echo $DATE | cut -d'-' -f1`
-    THISHOUR=`echo $DATE | cut -d'-' -f2`
+    THISDAY=`date +%Y/%m/%d`
+    THISHOUR=`date +%H`
     if ! [ -d $DATADIR/$THISDAY/$THISHOUR ] ; then
       mkdir -p $DATADIR/$THISDAY/$THISHOUR/high
     fi
