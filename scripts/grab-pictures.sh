@@ -58,7 +58,7 @@ elif [ $HOUR -ge $STARTHOUR ] ; then
       echo "camera: $camera  URL: $camera_url"
       pwd
     fi
-    wget -a $DATADIR/$THISDAY/$THISHOUR/grab.hourly.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
+    wget --timeouti=5 -a $DATADIR/$THISDAY/$THISHOUR/grab.hourly.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
     sync
     sleep $PAUSETIME
   done
