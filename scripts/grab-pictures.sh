@@ -7,6 +7,7 @@ DEBUG="false"
 SCRIPTNAME="grab-pictures"
 source /etc/grab-bag.conf
 LOCKFILE="$LOCKDIR/$SCRIPTNAME"
+LOGDIR="$DATADIR/logs"
 
 ############
 # Check if we are already running
@@ -30,6 +31,13 @@ else
   # This is the first time running, set things up
   mkdir $LOCKDIR
   echo $$ > $LOCKFILE
+fi
+
+############
+# Make sure we have a log directory
+############
+if ! [ -d ${LOGDIR} ] ; then
+  mkdir -p ${LOGDIR}
 fi
 
 ############
@@ -58,7 +66,7 @@ elif [ $HOUR -ge $STARTHOUR ] ; then
       echo "camera: $camera  URL: $camera_url"
       pwd
     fi
-    wget --timeouti=5 -a $DATADIR/$THISDAY/$THISHOUR/grab.hourly.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
+    wget -a ${LOGDIR}/grab-$THISDAY-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
     sync
     sleep $PAUSETIME
   done
