@@ -57,6 +57,7 @@ elif [ $HOUR -ge $STARTHOUR ] ; then
     camera_url=`echo ${cameras["$camera"]}| awk '{print $1}'`
     DATE=`date +%Y%m%d-%H-%M%S`
     THISDAY=`date +%Y/%m/%d`
+    THISDAYDASH=`date +%Y-%m-%d`
     THISHOUR=`date +%H`
     if ! [ -d $DATADIR/$THISDAY/$THISHOUR ] ; then
       mkdir -p $DATADIR/$THISDAY/$THISHOUR/high
@@ -66,7 +67,7 @@ elif [ $HOUR -ge $STARTHOUR ] ; then
       echo "camera: $camera  URL: $camera_url"
       pwd
     fi
-    wget -a ${LOGDIR}/grab-$THISDAY-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
+    wget -a ${LOGDIR}/grab-$THISDAYDASH-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
     sync
     sleep $PAUSETIME
   done
