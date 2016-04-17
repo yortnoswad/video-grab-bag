@@ -1,0 +1,105 @@
+#!/bin/bash
+#
+############
+# VARIABLES
+############
+DEBUG="false"
+SCRIPTNAME="grab-pictures-camera"
+source /etc/grab-bag.conf
+LOGDIR="${DATADIR}/logs"
+
+############
+# Check if we got a valid camera
+############
+INPUT="$1"
+MYCAMERA=""
+MYCAMERA_URL=""
+LOCKFILE=""
+STOPFILE=""
+for camera in ${!cameras[@]}
+do
+  echo ${camera}
+  if [ "${camera}" == "${INPUT}" ] ; then
+    MYCAMERA="${INPUT}"
+    MYCAMERA_URL=`echo ${cameras["${camera}"]}| awk '{print $1}'`
+    LOCKFILE="${LOCKDIR}/${SCRIPTNAME}.${MYCAMERA}"
+    STOPFILE="${LOCKDIR}/${SCRIPTNAME}.${MYCAMERA}.stop"
+    if [ "${DEBUG}" == "true" ] ; then
+      echo "camera check: MATCH ${MYCAMERA}  URL: ${MYCAMERA_URL}"
+    fi
+  else
+    if [ "${DEBUG}" == "true" ] ; then
+      echo "camera check: NO MATCH input: ${INPUT} camera: ${camera}"
+    fi
+  fi
+done
+if [ "${MYCAMERA}" == "" ] ; then
+  echo "Invalid camera:"
+  echo "exiting."
+  exit 5
+fi
+
+
+############
+# Check if we are already running
+############
+if [ -d ${LOCKDIR} ] ; then
+  if [ -f ${LOCKFILE} ] ; then
+    # We have a lockfile, check if it really is running
+    OLDPROCESS=`cat ${LOCKFILE}`
+    if [ -d /proc/$OLDPROCESS ] ; then
+      # We are already running
+      exit 1
+    else
+      # Stale lock file, make it fresh and move on
+      echo $$ > ${LOCKFILE}
+    fi
+  else
+    # No lockfile, assume we can run
+    echo $$ > ${LOCKFILE}
+  fi
+else
+  # This is the first time running, set things up
+  mkdir ${LOCKDIR}
+  echo $$ > ${LOCKFILE}
+fi
+
+############
+# MAIN PROGRAM
+############
+while true
+do
+  #Check if we are supposed to stop.
+  if [ -f ${STOPFILE} ] ; then
+    rm -f ${STOPFILE}
+    rm -f ${LOCKFILE}
+    exit 3
+  fi
+  HOUR=`date +%H`
+  if [ $HOUR -gt $ENDHOUR ]  ; then
+    # End of the day, exit
+    rm -f ${LOCKFILE}
+    exit 2
+  elif [ $HOUR -ge $STARTHOUR ] ; then
+    DATE=`date +%Y%m%d-%H-%M%S`
+    THISDAY=`date +%Y/%m/%d`
+    THISDAYDASH=`date +%Y-%m-%d`
+    THISHOUR=`date +%H`
+    if ! [ -d $DATADIR/$THISDAY/$THISHOUR ] ; then
+      mkdir -p $DATADIR/$THISDAY/$THISHOUR/high
+    fi
+    cd $DATADIR/$THISDAY/$THISHOUR
+    if [ "${DEBUG}" == "true" ] ; then
+      echo "camera: ${MYCAMERA}  URL: ${MYCAMERA_URL}"
+      pwd
+    fi
+    wget -t 1 -T 10 -a ${LOGDIR}/grab-$THISDAYDASH-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/${MYCAMERA}-$DATE.jpg ${MYCAMERA_URL}
+    sync
+    sleep $PAUSETIME
+  else
+    # Day has not started yet, sleep for 2 minutes
+    sleep 120
+  fi
+done
+
+

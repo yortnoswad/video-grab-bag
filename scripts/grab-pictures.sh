@@ -5,33 +5,9 @@
 ############
 DEBUG="false"
 SCRIPTNAME="grab-pictures"
+THREADSCRIPTNAME="grab-pictures-camera"
 source /etc/grab-bag.conf
-LOCKFILE="$LOCKDIR/$SCRIPTNAME"
 LOGDIR="$DATADIR/logs"
-
-############
-# Check if we are already running
-############
-if [ -d $LOCKDIR ] ; then
-  if [ -f $LOCKFILE ] ; then
-    # We have a lockfile, check if it really is running
-    OLDPROCESS=`cat $LOCKFILE`
-    if [ -d /proc/$OLDPROCESS ] ; then
-      # We are already running
-      exit 1
-    else
-      # Stale lock file, make it fresh and move on
-      echo $$ > $LOCKFILE
-    fi
-  else
-    # No lockfile, assume we can run
-    echo $$ > $LOCKFILE
-  fi
-else
-  # This is the first time running, set things up
-  mkdir $LOCKDIR
-  echo $$ > $LOCKFILE
-fi
 
 ############
 # Make sure we have a log directory
@@ -40,41 +16,48 @@ if ! [ -d ${LOGDIR} ] ; then
   mkdir -p ${LOGDIR}
 fi
 
-############
-# MAIN PROGRAM
-############
-while true
-do
-HOUR=`date +%H`
-if [ $HOUR -gt $ENDHOUR ]  ; then
-  # End of the day, exit
-  rm -f $LOCKFILE
-  exit 2
-elif [ $HOUR -ge $STARTHOUR ] ; then
-  # Do each camera separately
+start() {
   for camera in ${!cameras[@]}
   do
-    camera_url=`echo ${cameras["$camera"]}| awk '{print $1}'`
-    DATE=`date +%Y%m%d-%H-%M%S`
-    THISDAY=`date +%Y/%m/%d`
-    THISDAYDASH=`date +%Y-%m-%d`
-    THISHOUR=`date +%H`
-    if ! [ -d $DATADIR/$THISDAY/$THISHOUR ] ; then
-      mkdir -p $DATADIR/$THISDAY/$THISHOUR/high
-    fi
-    cd $DATADIR/$THISDAY/$THISHOUR
-    if [ "$DEBUG" == "true" ] ; then
-      echo "camera: $camera  URL: $camera_url"
-      pwd
-    fi
-    wget -a ${LOGDIR}/grab-$THISDAYDASH-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/$camera-$DATE.jpg $camera_url
-    sync
-    sleep $PAUSETIME
+    echo "  Starting camera: ${camera}"
+    ${THREADSCRIPTNAME} ${camera} &
   done
-else
-	# Day has not started yet, sleep for 2 minutes
-	sleep 120
-fi
-done
+  RETVAL=0
+}
 
+stop() {
+  for camera in ${!cameras[@]}
+  do
+    echo "  Stopping camera: ${camera}"
+    echo "stop" > ${LOCKDIR}/${THREADSCRIPTNAME}.${camera}.stop
+  done
+  RETVAL=0
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+        echo "Status not implemented yet"
+	RETVAL=3
+	;;
+  restart)
+	stop
+        echo "Stop command given.  Waiting for a while before starting"
+        sleep $PAUSETIME
+        echo "  sleeping 20 more seconds, just to be sure"
+        sleep 20
+        echo "Starting ..."
+	start
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|restart|status}"
+esac
+
+exit $RETVAL
 
