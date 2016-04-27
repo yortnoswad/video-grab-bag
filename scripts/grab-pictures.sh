@@ -19,7 +19,7 @@ fi
 start() {
   for camera in ${!cameras[@]}
   do
-    echo "  Starting camera: ${camera}"
+    #echo "  Starting camera: ${camera}"
     ${THREADSCRIPTNAME} ${camera} &
   done
   RETVAL=0

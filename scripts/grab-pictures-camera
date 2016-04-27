@@ -18,7 +18,6 @@ LOCKFILE=""
 STOPFILE=""
 for camera in ${!cameras[@]}
 do
-  echo ${camera}
   if [ "${camera}" == "${INPUT}" ] ; then
     MYCAMERA="${INPUT}"
     MYCAMERA_URL=`echo ${cameras["${camera}"]}| awk '{print $1}'`
