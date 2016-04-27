@@ -1,3 +1,3 @@
 # Grab pictures
 # Check hourly to make sure it is running
-50 * * * * root /usr/bin/grab-pictures.sh
+50 * * * * root /usr/bin/grab-pictures.sh start
