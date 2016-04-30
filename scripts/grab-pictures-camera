@@ -21,6 +21,7 @@ do
   if [ "${camera}" == "${INPUT}" ] ; then
     MYCAMERA="${INPUT}"
     MYCAMERA_URL=`echo ${cameras["${camera}"]}| awk '{print $1}'`
+    MYCAMERA_PAUSE=`echo ${cameras["${camera}"]}| awk '{print $3}'`
     LOCKFILE="${LOCKDIR}/${SCRIPTNAME}.${MYCAMERA}"
     STOPFILE="${LOCKDIR}/${SCRIPTNAME}.${MYCAMERA}.stop"
     if [ "${DEBUG}" == "true" ] ; then
@@ -36,6 +37,9 @@ if [ "${MYCAMERA}" == "" ] ; then
   echo "Invalid camera:"
   echo "exiting."
   exit 5
+fi
+if ! [ "${MYCAMERA_PAUSE}" == "" ] && ! [ "${MYCAMERA_PAUSE}" == "default" ] ; then
+  PAUSETIME="${MYCAMERA_PAUSE}"
 fi
 
 
@@ -94,7 +98,7 @@ do
     fi
     wget -t 1 -T 10 -a ${LOGDIR}/grab-$THISDAYDASH-$THISHOUR.log -O $DATADIR/$THISDAY/$THISHOUR/high/${MYCAMERA}-$DATE.jpg ${MYCAMERA_URL}
     sync
-    sleep $PAUSETIME
+    sleep ${PAUSETIME}
   else
     # Day has not started yet, sleep for 2 minutes
     sleep 120
