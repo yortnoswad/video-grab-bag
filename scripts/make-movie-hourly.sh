@@ -57,9 +57,17 @@ fi
 
 ############
 # Upload video's
-# - implement this in a little bit
 ############
-#cd $DATADIR/$THISDAY/$THISHOUR/video
-#lftp -e "cd hourly; mkdir $THISDAY; cd $THISDAY; put video.$THISDAY-$THISHOUR.1.mp4; put video.$THISDAY-$THISHOUR.2.mp4; bye" -u $UPLOADUSER,$UPLOADPASSWORD $UPLOADSERVER
-
+if [ "${UPLOADTYPE}" == "ftp" ] ; then
+  cd $DATADIR/$THISDAY/$THISHOUR/video
+  lftp -e "cd hourly; mkdir $THISDAY; cd $THISDAY; mput *.mp4; bye" -u $UPLOADUSER,$UPLOADPASSWORD $UPLOADSERVER
+elif [ "${UPLOADTYPE}" == "scp" ] ; then
+  if [ "${SSHAUTH}" == "password" ] ; then
+    SSHOPTION=" -p ${UPLOADPASSWORD} "
+  elif [ "${SSHAUTH}" == "key" ] ; then
+    SSHOPTION=" -i ${SSHKEY} "
+  fi
+  ssh ${SSHOPTION} ${UPLOADUSER}@${UPLOADSERVER} "mkdir -p ${UPLOADPATH}/${THISDAY}/"
+  scp ${SSHOPTION} $DATADIR/$THISDAY/$THISHOUR/video/*.mp4 ${UPLOADUSER}@${UPLOADSERVER}:${UPLOADPATH}/${THISDAY}/
+fi
 

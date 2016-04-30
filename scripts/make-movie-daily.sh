@@ -43,15 +43,16 @@ fi
 
 ############
 # UPLOAD YESTERDAYS VIDEOS
-# - implement this in a little bit
 ############
-# YESTERDAY=`date --date="yesterday" +%Y%m%d`
-# YESTERDAYYEAR=`date --date="yesterday" +%Y`
-# YESTERDAYMONTH=`date --date="yesterday" +%m`
-# sync
-# sync
-# if [ -d $DATADIR/$YESTERDAY ] ; then
-# 	cd $DATADIR/$YESTERDAY
-#lftp -e "cd daily/$YESTERDAYYEAR/$YESTERDAYMONTH; put video.$YESTERDAY.1.mp4; put video.$YESTERDAY.2.mp4; bye" -u $UPLOADUSER,$UPLOADPASSWORD $UPLOADSERVER
-# fi
-# 
+if [ "${UPLOADTYPE}" == "ftp" ] ; then
+  cd $DATADIR/$THISDAY/video
+  lftp -e "cd daily; mkdir $THISDAY; cd $THISDAY; mput *.mp4; bye" -u $UPLOADUSER,$UPLOADPASSWORD $UPLOADSERVER
+elif [ "${UPLOADTYPE}" == "scp" ] ; then
+  if [ "${SSHAUTH}" == "password" ] ; then
+    SSHOPTION=" -p ${UPLOADPASSWORD} "
+  elif [ "${SSHAUTH}" == "key" ] ; then
+    SSHOPTION=" -i ${SSHKEY} "
+  fi
+  ssh ${SSHOPTION} ${UPLOADUSER}@${UPLOADSERVER} "mkdir -p ${UPLOADPATH}/${THISDAY}/"
+  scp ${SSHOPTION} $DATADIR/$THISDAY/video/*.mp4 ${UPLOADUSER}@${UPLOADSERVER}:${UPLOADPATH}/${THISDAY}/
+fi
