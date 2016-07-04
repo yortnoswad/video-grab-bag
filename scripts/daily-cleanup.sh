@@ -48,7 +48,7 @@ if [ "${UPLOADTYPE}" == "scp" ] ; then
   elif [ "${SSHAUTH}" == "key" ] ; then
     SSHOPTION=" -i ${SSHKEY} "
   fi
-  ssh ${SSHOPTION} ${UPLOADUSER}@${UPLOADSERVER} "rm -f ${UPLOADPATH}/${REMOTEDAILYDATE}/video.hourly*"
+  ssh ${SSHOPTION} ${UPLOADUSER}@${UPLOADSERVER} "rm -f ${UPLOADPATH}/${REMOTEHOURLYDATE}/video.hourly*"
 fi
 
 ############
